@@ -3,84 +3,327 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Soil Classification and Analysis</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <title>SoilSync: Soil Analysis & Crop Recommendation</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      max-width: 600px;
+      width: 100%;
+      padding: 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: #2e7d32;
+    }
+
+    h1 {
+      color: #1b5e20;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    p {
+      color: #424242;
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      color: #37474f;
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="file"],
+    input[type="number"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #f9fafb;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="file"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #2e7d32;
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+    }
+
+    .row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .col {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+    }
+
+    .tooltip .tooltip-text {
+      visibility: hidden;
+      width: 200px;
+      background: #263238;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 0.5rem;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    button {
+      background: #2e7d32;
+      color: #ffffff;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.1s;
+      margin: 0.5rem;
+    }
+
+    button:hover {
+      background: #1b5e20;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .location-btn {
+      background: #6d4c41;
+    }
+
+    .location-btn:hover {
+      background: #5d4037;
+    }
+
+    .error {
+      color: #d32f2f;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 1.5rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      p {
+        font-size: 1rem;
+      }
+
+      .row {
+        flex-direction: column;
+        gap: 0;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container my-5">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <div class="card shadow">
-          <div class="card-body">
-            <h1 class="card-title text-center mb-4">Soil Classification and Analysis</h1>
-            <p class="text-center mb-4">Upload a soil image and provide additional parameters for accurate classification and recommendations. We'll analyze the soil type and suggest suitable crops based on your inputs.</p>
+  <div class="container">
+    <h1>SoilSync: Soil Analysis & Crop Recommendation</h1>
+    <p>Upload a soil image and enter environmental data to analyze soil type and get tailored crop recommendations for your farm.</p>
 
-            <form action="http://localhost:5000/upload" method="POST" enctype="multipart/form-data" id="soilForm">
-              <div class="mb-3">
-                <label for="soilImage" class="form-label">Soil Image</label>
-                <input type="file" class="form-control" id="soilImage" name="soilImage" accept="image/*" required>
-                <div class="form-text">Upload a clear image of the soil (JPG, PNG, etc.).</div>
-              </div>
+    <form action="http://localhost:5000/upload" method="POST" enctype="multipart/form-data" id="soilForm">
+      <div class="form-group">
+        <label for="soilImage">Soil Image <span class="tooltip">ℹ<span class="tooltip-text">Upload a clear image of the soil (JPG, PNG). Ensure good lighting for accurate classification.</span></span></label>
+        <input type="file" id="soilImage" name="soilImage" accept="image/*" required>
+        <div class="error" id="soilImageError">Please select a valid image file.</div>
+      </div>
 
-              <div class="row mb-3">
-                <div class="col-md-6">
-                  <label for="latitude" class="form-label">Latitude</label>
-                  <input type="number" class="form-control" id="latitude" name="latitude" step="any" placeholder="e.g., 23.0775" required>
-                </div>
-                <div class="col-md-6">
-                  <label for="longitude" class="form-label">Longitude</label>
-                  <input type="number" class="form-control" id="longitude" name="longitude" step="any" placeholder="e.g., 76.8513" required>
-                </div>
-              </div>
-              <div class="mb-3 text-center">
-                <button type="button" class="btn btn-secondary" id="getLocationBtn">Get Current Location</button>
-              </div>
-
-              <div class="row mb-3">
-                <div class="col-md-6">
-                  <label for="N" class="form-label">Nitrogen (N) - kg/ha</label>
-                  <input type="number" class="form-control" id="N" name="N" min="0" max="140" step="any" placeholder="e.g., 90" required>
-                </div>
-                <div class="col-md-6">
-                  <label for="P" class="form-label">Phosphorus (P) - kg/ha</label>
-                  <input type="number" class="form-control" id="P" name="P" min="0" max="145" step="any" placeholder="e.g., 42" required>
-                </div>
-              </div>
-
-              <div class="row mb-3">
-                <div class="col-md-6">
-                  <label for="K" class="form-label">Potassium (K) - kg/ha</label>
-                  <input type="number" class="form-control" id="K" name="K" min="0" max="205" step="any" placeholder="e.g., 43" required>
-                </div>
-                <div class="col-md-6">
-                  <label for="ph" class="form-label">pH Value</label>
-                  <input type="number" class="form-control" id="ph" name="ph" min="3.5" max="9.9" step="any" placeholder="e.g., 6.5" required>
-                </div>
-              </div>
-
-              <div class="text-center">
-                <button type="submit" class="btn btn-primary btn-lg">Analyze Soil</button>
-              </div>
-            </form>
-          </div>
+      <div class="form-group row">
+        <div class="col">
+          <label for="latitude">Latitude <span class="tooltip">ℹ<span class="tooltip-text">Enter your farm's latitude (e.g., 23.0775 for Ujjain, India).</span></span></label>
+          <input type="number" id="latitude" name="latitude" step="any" placeholder="e.g., 23.0775" required>
+          <div class="error" id="latitudeError">Latitude must be between -90 and 90.</div>
+        </div>
+        <div class="col">
+          <label for="longitude">Longitude <span class="tooltip">ℹ<span class="tooltip-text">Enter your farm's longitude (e.g., 76.8513 for Ujjain, India).</span></span></label>
+          <input type="number" id="longitude" name="longitude" step="any" placeholder="e.g., 76.8513" required>
+          <div class="error" id="longitudeError">Longitude must be between -180 and 180.</div>
         </div>
       </div>
-    </div>
+
+      <div class="form-group">
+        <button type="button" class="location-btn" id="getLocationBtn">Use Current Location</button>
+      </div>
+
+      <div class="form-group row">
+        <div class="col">
+          <label for="N">Nitrogen (N) - kg/ha <span class="tooltip">ℹ<span class="tooltip-text">Soil nitrogen content (0–140 kg/ha). Affects plant growth.</span></span></label>
+          <input type="number" id="N" name="N" min="0" max="140" step="any" placeholder="e.g., 90" required>
+          <div class="error" id="NError">Nitrogen must be between 0 and 140 kg/ha.</div>
+        </div>
+        <div class="col">
+          <label for="P">Phosphorus (P) - kg/ha <span class="tooltip">ℹ<span class="tooltip-text">Soil phosphorus content (0–145 kg/ha). Supports root development.</span></span></label>
+          <input type="number" id="P" name="P" min="0" max="145" step="any" placeholder="e.g., 42" required>
+          <div class="error" id="PError">Phosphorus must be between 0 and 145 kg/ha.</div>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div class="col">
+          <label for="K">Potassium (K) - kg/ha <span class="tooltip">ℹ<span class="tooltip-text">Soil potassium content (0–205 kg/ha). Enhances disease resistance.</span></span></label>
+          <input type="number" id="K" name="K" min="0" max="205" step="any" placeholder="e.g., 43" required>
+          <div class="error" id="KError">Potassium must be between 0 and 205 kg/ha.</div>
+        </div>
+        <div class="col">
+          <label for="ph">pH Value <span class="tooltip">ℹ<span class="tooltip-text">Soil pH (3.5–9.9). Affects nutrient availability (6–7 is ideal for most crops).</span></span></label>
+          <input type="number" id="ph" name="ph" min="3.5" max="9.9" step="any" placeholder="e.g., 6.5" required>
+          <div class="error" id="phError">pH must be between 3.5 and 9.9.</div>
+        </div>
+      </div>
+
+      <button type="submit">Analyze Soil</button>
+    </form>
   </div>
 
   <script>
+    // Geolocation functionality
     document.getElementById('getLocationBtn').addEventListener('click', function() {
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-          document.getElementById('latitude').value = position.coords.latitude;
-          document.getElementById('longitude').value = position.coords.longitude;
-          alert('Location fetched successfully!');
-        }, function(error) {
-          alert('Error fetching location: ' + error.message);
-        });
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            document.getElementById('latitude').value = position.coords.latitude.toFixed(4);
+            document.getElementById('longitude').value = position.coords.longitude.toFixed(4);
+            alert('Location fetched successfully!');
+          },
+          function(error) {
+            alert('Error fetching location: ' + error.message);
+          }
+        );
       } else {
         alert('Geolocation is not supported by this browser.');
+      }
+    });
+
+    // Form validation
+    document.getElementById('soilForm').addEventListener('submit', function(e) {
+      let isValid = true;
+
+      // Validate latitude
+      const latitude = parseFloat(document.getElementById('latitude').value);
+      if (isNaN(latitude) || latitude < -90 || latitude > 90) {
+        document.getElementById('latitudeError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('latitudeError').style.display = 'none';
+      }
+
+      // Validate longitude
+      const longitude = parseFloat(document.getElementById('longitude').value);
+      if (isNaN(longitude) || longitude < -180 || longitude > 180) {
+        document.getElementById('longitudeError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('longitudeError').style.display = 'none';
+      }
+
+      // Validate Nitrogen (N)
+      const N = parseFloat(document.getElementById('N').value);
+      if (isNaN(N) || N < 0 || N > 140) {
+        document.getElementById('NError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('NError').style.display = 'none';
+      }
+
+      // Validate Phosphorus (P)
+      const P = parseFloat(document.getElementById('P').value);
+      if (isNaN(P) || P < 0 || P > 145) {
+        document.getElementById('PError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('PError').style.display = 'none';
+      }
+
+      // Validate Potassium (K)
+      const K = parseFloat(document.getElementById('K').value);
+      if (isNaN(K) || K < 0 || K > 205) {
+        document.getElementById('KError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('KError').style.display = 'none';
+      }
+
+      // Validate pH
+      const ph = parseFloat(document.getElementById('ph').value);
+      if (isNaN(ph) || ph < 3.5 || ph > 9.9) {
+        document.getElementById('phError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('phError').style.display = 'none';
+      }
+
+      if (!isValid) {
+        e.preventDefault();
+        alert('Please correct the errors in the form.');
       }
     });
   </script>
